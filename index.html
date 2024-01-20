@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* Estilos Globais */
+        body {
+            background-color: black; /* Fundo preto */
+            color: white; /* Texto branco */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        a, button {
+            background-color: #FF0000; /* MantÃ©m o vermelho para links e botÃµes */
+            color: white; /* Texto branco nos links e botÃµes */
+            margin-top: 10px;
+        }
+        /* (Estilos do seu cÃ³digo CSS) */
+        #points-section,
+        #user-code-section,
+        .circle-menu,
+        #unlock,
+        #payment-message {
+            text-align: center;
+            margin-top: 20px;
+        }
+        /* EspaÃ§amento adicional para o parÃ¡grafo */
+        p {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+  <h3>a</h3>
+    <p>Faça o PIX de R$20,00 clicando no link Realizar PIX e envie o comprovante de pagamento para o número +55 (48) 98433-0340. Você ajuda a loja e o canal a crescer e ganha dinheiro!</p>
+    <div id="unlock">
+        <button onclick="allowUnlockForPINWHEEL()">Desbloquear Recursos</button>
+    </div>
+    <div id="payment-message">
+        Ao enviar o comprovante e informar seu PINWHEEL, você poderá inserir o seu PINWHEEL no link acima para obter o link Bônus por indicação.O seu PINWHEEL será sempre o mesmo nesse dispositivo.
+    </div>
+    <button onclick="requestPINWHEELCode()">Obter PINWHEEL</button>
+    <ul class="circle-menu">
+        <li><a href="https://nubank.com.br/cobrar/tezyu/65a41ae1-659d-4dab-84f3-8dd2bed26604">Realizar PIX</a></li>
+        <li><a href="https://steinshop.com.br/">Visitar Loja</a></li>
+        <li><a href="https://youtube.com/@void33.?feature=shared">Acessar Canal</a></li>
+        <li class="locked" id="link4"><a href="#" onclick="indicatePINWHEEL()">Bônus por indicação</a></li>
+        <li class="locked"></li>
+    </ul>
+    <div id="user-code-section">
+        <h3>Seu PINWHEEL:</h3>
+        <p id="user-code">Ainda não obtido</p>
+        <p id="user-reserve-code"></p>
+    </div>
+    <div id="points-section">
+        <h3>Sua Pontuação:</h3>
+        <p id="user-points">0 ponto(s)</p>
+        <button onclick="searchUserPoints()">Verificar Pontuação do usuário</button>
+    </div>
+    <script>
+        // Recupera o PINWHEEL associado Ã  identificaÃ§Ã£o Ãºnica do dispositivo
+        var deviceId = getDeviceId(); // Implemente a lÃ³gica para obter a identificaÃ§Ã£o Ãºnica do dispositivo
+        var userCode = localStorage.getItem("PINWHEEL_" + deviceId);
+
+        if (!userCode) {
+            // Se nÃ£o houver um PINWHEEL associado ao dispositivo, gera um novo PINWHEEL
+            userCode = generateRandomCode(15);
+            // Armazena o PINWHEEL associado ao dispositivo no armazenamento local
+            localStorage.setItem("PINWHEEL_" + deviceId, userCode);
+        }
+
+        var allowedPINWHEELs = ["423392730642782", "724925675398178", "930572324433641","986527506807377"]; // Adicione aqui os PINWHEELs permitidos
+        var isUnlocked = false;
+        var userPoints = 0;
+        var userReserveCode = null;
+        var userEmail = null;
+        var userIndicationCode = null;
+        var lastIndicationTimestamp = null;
+
+        var friendCodes = {
+            "codigo_amigo_1": 1,
+            "codigo_amigo_2": 1,
+            "104775966952803": 1,
+            "839387359898184": 1
+        };
+
+        function allowUnlockForPINWHEEL() {
+            var enteredPINWHEEL = prompt("Insira o PINWHEEL para desbloquear os recursos:");
+
+            if (allowedPINWHEELs.includes(enteredPINWHEEL)) {
+                var lockedLinks = document.querySelectorAll('.circle-menu li:nth-child(n+4)');
+                lockedLinks.forEach(link => {
+                    link.style.display = 'block';
+                });
+
+                document.getElementById("unlock").style.display = 'none';
+                isUnlocked = true;
+                updateUserCode();
+            } else {
+                alert("PINWHEEL nÃ£o autorizado. Tente novamente.");
+            }
+        }
+
+        function requestPINWHEELCode() {
+            // Esta funÃ§Ã£o foi modificada para utilizar o PINWHEEL associado ao dispositivo
+            userCode = localStorage.getItem("PINWHEEL_" + deviceId);
+            document.getElementById("user-code").textContent = userCode;
+            updateUserCode();
+        }
+
+        function searchUserPoints() {
+            var searchUserCode = prompt("Insira o PINWHEEL do usuÃ¡rio para verificar a pontuaÃ§Ã£o:");
+            
+            if (allowedPINWHEELs.includes(searchUserCode)) {
+                var userPoints = friendCodes[searchUserCode] || 0;
+                alert("PontuaÃ§Ã£o do usuÃ¡rio " + searchUserCode + ": " + userPoints + " ponto(s)");
+            } else {
+                alert("PINWHEEL do usuÃ¡rio nÃ£o encontrado ou nÃ£o autorizado.");
+            }
+        }
+
+        function updateUserPoints() {
+            document.getElementById("user-points").textContent = userPoints + " ponto(s)";
+        }
+
+        function generateRandomCode(length) {
+            var result = '';
+            var characters = '0123456789';
+            for (var i = 0; i < length; i++) {
+                result += characters.charAt(Math.floor(Math.random() * characters.length));
+            }
+            return result;
+        }
+
+        function getDeviceId() {
+            // Implemente a lÃ³gica para obter uma identificaÃ§Ã£o Ãºnica do dispositivo (ex: ID do dispositivo mÃ³vel, cookie Ãºnico, etc.)
+            // Retorne uma string que represente a identificaÃ§Ã£o Ãºnica do dispositivo.
+            return "exemplo_device_id";
+        }
+    </script>
+</body>
+</html>
